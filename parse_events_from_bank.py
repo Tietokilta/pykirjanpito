@@ -5,11 +5,9 @@ import json
 import re
 import sys
 import tik
-
+from configuration import configuration
 
 parser = argparse.ArgumentParser()
-parser.add_argument("username")
-parser.add_argument("password")
 parser.add_argument("filename")
 args = parser.parse_args()
 
@@ -28,6 +26,8 @@ def analyze_transaction(tr, replace_invalid=False):
             credit = u'0171 - Powerkähmyt'
         elif re.search(u'Juusto', tr[u'message'], re.IGNORECASE):
             credit = u'0350 Maisteluillat'
+        elif re.search(u'Opera', tr[u'message'], re.IGNORECASE):
+            credit = u'0300 Teatteri, ooppera jne.'
         elif re.search(u'miekkailu', tr[u'message'], re.IGNORECASE):
             credit = u'0360 Liikuntatoiminta'
         elif re.search(u'bp|lenski', tr[u'message'], re.IGNORECASE):
@@ -46,6 +46,8 @@ def analyze_transaction(tr, replace_invalid=False):
         credit = u'2050 Handelsbanken'
         if re.search(u'Muisti|Välimuistinnollaus|M0', tr[u'message'], re.IGNORECASE):
             debit = u'0200 Muistinnollaus ja välimuistinnollaus'
+        elif re.search(u'OK20|Gorsu|sauna', tr[u'message'], re.IGNORECASE):
+            debit = u'0260 AYY-tilavuokrat'
         elif re.search(u'Vuju|vuosijuhla', tr[u'message'], re.IGNORECASE):
             debit = u'0600 - Vuosijuhlaedustus'
 
@@ -95,7 +97,7 @@ if r != 'y':
     sys.quit()
 
 print "Connecting..."
-tikapi = tik.TIK(args.username, args.password)
+tikapi = tik.TIK(configuration['username'], configuration['password'])
 
 print tikapi.get_max_id()
 
