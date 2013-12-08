@@ -26,7 +26,7 @@ def analyze_transaction(tr, replace_invalid=False):
             credit = u'0171 - Powerkähmyt'
         elif re.search(u'Juusto', tr[u'message'], re.IGNORECASE):
             credit = u'0350 Maisteluillat'
-        elif re.search(u'Opera', tr[u'message'], re.IGNORECASE):
+        elif re.search(u'Opera|Ooppera|figaro', tr[u'message'], re.IGNORECASE):
             credit = u'0300 Teatteri, ooppera jne.'
         elif re.search(u'miekkailu', tr[u'message'], re.IGNORECASE):
             credit = u'0360 Liikuntatoiminta'
@@ -48,6 +48,8 @@ def analyze_transaction(tr, replace_invalid=False):
             debit = u'0200 Muistinnollaus ja välimuistinnollaus'
         elif re.search(u'OK20|Gorsu|sauna', tr[u'message'], re.IGNORECASE):
             debit = u'0260 AYY-tilavuokrat'
+        elif re.search(u'palvelumaksut', tr[u'message'], re.IGNORECASE):
+            debit = u'1040 Pankkipalvelumaksut'
         elif re.search(u'Vuju|vuosijuhla', tr[u'message'], re.IGNORECASE):
             debit = u'0600 - Vuosijuhlaedustus'
 
