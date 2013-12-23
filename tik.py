@@ -28,6 +28,23 @@ class TIK:
             max_id = max(max_id, int(row['id']))
         return max_id
 
+    def get_form_values(self, raw_id):
+        response = self.session.get('https://kirjanpito.tietokilta.fi/entries/edit/%s' % raw_id)
+        form_data = {}
+        for input_ in pq(response.text)('#content form input, #content form select, #content form textarea').items():
+            name = input_.attr('name')
+            value = input_.val()
+            if value is None:
+                value = pq(input_.html()).find('option:selected').val()
+            if name:
+                form_data[name] = value
+        return form_data
+
+    def set_form_values(self, raw_id, form_data):
+        response = self.session.post('https://kirjanpito.tietokilta.fi/entries/update/%s' % raw_id, data=form_data)
+        return response
+        #print response.text
+
     def add_entry(
         self,
         description,
@@ -37,14 +54,17 @@ class TIK:
         debit,
         year=2013
     ):
+        dateyear = date.split('.')[2]
+        if len(dateyear) == 2:
+            dateyear = '20' + dateyear
         response = self.session.post('https://kirjanpito.tietokilta.fi/entries/add_to_entries', data={
             'entry[receipt_number]': self.get_max_id()+1,
             'entry[description]': description,
             'entry[sum]': price,
             'entry[date(3i)]': date.split('.')[0],
             'entry[date(2i)]': date.split('.')[1],
-            'entry[date(1i)]': date.split('.')[2],
-            'entry[fiscal_period_id]': year,
+            'entry[date(1i)]': year,
+            'entry[fiscal_period_id]': dateyear,
             'debet_account': debit,
             'entry[debet_account_id]': "%s%s" % (year, debit.split(' ')[0]),
             'credit_account': credit,

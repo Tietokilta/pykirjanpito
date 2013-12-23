@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -§*- coding: utf-8 -*-
 import operator
 import argparse
 import json
@@ -81,7 +81,7 @@ stats = {}
 example = {}
 total = 0
 for transaction in transactions:
-    if u'sign' in transaction and transaction['message']:
+    if u'sign' in transaction:
         pair = analyze_transaction(transaction)
         if not pair in stats:
             stats[pair] = 0
@@ -104,7 +104,7 @@ tikapi = tik.TIK(configuration['username'], configuration['password'])
 print tikapi.get_max_id()
 
 for transaction in transactions:
-    if u'sign' in transaction and transaction['message']:
+    if u'sign' in transaction:
         print "Adding transaction %r" % transaction
         pair = analyze_transaction(transaction, replace_invalid=True)
         tikapi.add_entry(
