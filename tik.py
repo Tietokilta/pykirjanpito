@@ -11,15 +11,28 @@ def read_decimal(string):
     string = string.replace(',', '.')
     return Decimal(string)
 
+class InvalidLoginError(Exception): pass
+class ServerError(Exception): pass
+
 class TIK:
     def __init__(self, username, password):
         self.session = requests.Session()
         self.session.verify = False # This is bad! :-(
-        self.session.post('https://kirjanpito.tietokilta.fi/sessions', data={
+        self.session.headers.update({'User-Agent': 'pykirjanpito'})
+        response = self.session.post('https://kirjanpito.tietokilta.fi/sessions', data={
             'login': username,
-            'password': password,
+            'password': password+'asdd',
             'commit': 'Kirjaudu sisään'
         })
+        if response.status_code != 302:
+            raise InvalidLoginError(response)
+
+    def _check_response(self, response):
+        if (
+            response.status_code != 200 or
+            'You are not logged in' in response.text
+        ):
+            raise ServerError(response)
 
     def get_max_id(self):
         rows = self.search('')
@@ -30,6 +43,8 @@ class TIK:
 
     def get_form_values(self, raw_id):
         response = self.session.get('https://kirjanpito.tietokilta.fi/entries/edit/%s' % raw_id)
+        if response.status_code != 200:
+            raise ServerError(response)
         form_data = {}
         for input_ in pq(response.text)('#content form input, #content form select, #content form textarea').items():
             name = input_.attr('name')
@@ -42,6 +57,7 @@ class TIK:
 
     def set_form_values(self, raw_id, form_data):
         response = self.session.post('https://kirjanpito.tietokilta.fi/entries/update/%s' % raw_id, data=form_data)
+        self._check_response(response)
         return response
         #print response.text
 
@@ -71,6 +87,7 @@ class TIK:
             'entry[credit_account_id]': "%s%s" % (year, credit.split(' ')[0]),
             '_': ''
         })
+        self._check_response(response)
         return response
 
     def search(self, q):
@@ -78,8 +95,7 @@ class TIK:
             'search': q,
             '_': ''
         })
-
-        #import pudb; pu.db;
+        self._check_response(response)
         rows = []
         for row in pq(response.text)('.odd_row, .even_row').items():
             tds = []

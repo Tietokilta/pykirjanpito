@@ -2,8 +2,10 @@
 
 import argparse
 import datetime
+import glob
 import tik
 import re
+import os
 import sys
 import database
 from configuration import configuration
@@ -19,7 +21,6 @@ event = db.session.query(Event).get(args.event_id)
 print "Connecting ..."
 tikapi = tik.TIK(configuration['username'], configuration['password'])
 print "Searching ..."
-asd = tikapi.search('speksi')
 
 def find_match(results, match):
     for result in results:
@@ -82,6 +83,26 @@ print "%s has NOT paid" % db.session.query(Order).filter(
     Order.event_id == args.event_id,
     Order.is_paid != True
 ).count()
+
+print "=== UNMATCHED ==="
+results = tikapi.search(event.keyword)
+for result in results:
+    has_match = False
+    
+    for order in db.session.query(Order).filter(
+        Order.event_id == args.event_id
+    ):
+        if order.name.decode('utf-8').lower() in result['message'].lower():
+            has_match = True
+            break
+
+    if not has_match:
+        print result
+else:
+    print "No results were found for keyword %r" % event.keyword
+    print "This could indicate wrong keyword or the server is hanging up. Cancelling..."
+    sys.exit()
+
 print
 print "=== SHAME LIST ==="
 
@@ -89,27 +110,47 @@ for order in db.session.query(Order).filter(
     Order.event_id == args.event_id,
     Order.is_paid != True
 ):
-    print order.name
+    print "%s <%s>" % (order.name, order.email)
 
 emails = [order.email for order in db.session.query(Order).filter(
     Order.event_id == args.event_id,
     Order.is_paid != True
 )]
 
+
+if 'txt_folder' in configuration and configuration['txt_folder']:
+    print "=== SEARCHING SHAME LIST IN .TXT ==="
+    for order in db.session.query(Order).filter(
+        Order.event_id == args.event_id,
+        Order.is_paid != True
+    ):
+        last_name = order.name.split(" ")[-1]
+        print "* %s" % order.name
+        for file_ in glob.glob(configuration['txt_folder']+'*.txt'):
+            with open(file_) as fp:
+                lines = fp.readlines()
+                for line in lines:
+                    if last_name.lower() in line.lower():
+                        print "%s: %s" % (
+                            os.path.basename(file_),
+                            line
+                        )
+
+
 print "=== EMAIL === "
 print ", ".join(emails)
-print """Hei!
+print """Hei! / Hey!
 
-Kirjanpitomme mukaan ette ole vielä maksaneet tapahtuman %s ilmottautumismaksua. Maksathan allaolevien ohjeiden mukaisesti mahdollisimman pian.
+Kirjanpitomme mukaan ette ole vielä maksaneet tapahtuman %(name)s maksua. Maksathan allaolevien ohjeiden mukaisesti mahdollisimman pian. / According to our accounting, you haven't paid event %(name)s.
 
-Saaja: Tietokilta ry
+Saaja (recipient): Tietokilta ry
 IBAN: FI44 3131 3001 5440 71
 BIC: HANDFIHH
-Summa: %s
-Viesti: %s, <nimi>
+Summa (amount): %(amount)s
+Viesti (message): %(keyword)s, <name>
 
-Ongelmatapauksissa minuun voi olla yhteydessä.""" % (
-    event.name,
-    event.price,
-    event.keyword
-)
+Ongelmatapauksissa minuun voi olla yhteydessä. Hyvää joulua!""" % {
+    'name': event.name,
+    'amount': event.price,
+    'keyword': event.keyword
+}
