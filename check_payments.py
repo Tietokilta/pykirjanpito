@@ -98,7 +98,7 @@ for result in results:
 
     if not has_match:
         print result
-else:
+if not results:
     print "No results were found for keyword %r" % event.keyword
     print "This could indicate wrong keyword or the server is hanging up. Cancelling..."
     sys.exit()

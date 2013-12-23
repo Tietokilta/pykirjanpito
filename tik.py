@@ -21,11 +21,11 @@ class TIK:
         self.session.headers.update({'User-Agent': 'pykirjanpito'})
         response = self.session.post('https://kirjanpito.tietokilta.fi/sessions', data={
             'login': username,
-            'password': password+'asdd',
+            'password': password,
             'commit': 'Kirjaudu sisään'
         })
-        if response.status_code != 302:
-            raise InvalidLoginError(response)
+        #if response.status_code != 302:
+        #    raise InvalidLoginError(response)
 
     def _check_response(self, response):
         if (
