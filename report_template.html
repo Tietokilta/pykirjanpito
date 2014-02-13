@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Siirtosaamiset</title>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Siirtosaamiset</h1>
+        {% for event in events %}
+            <h2>{{ event.name }}</h2>
+            <table class="table">
+                <tr>
+                    <th>Nimi</th>
+                    <th>Email</th>
+                    <th>Payment</th>
+                    <th>Tosite</th>
+                    <th>Maksettu pvm</th>
+                </tr>
+                {% for order in event.orders %}
+                    <tr {% if not order.is_paid %}class="info"{% endif %}>
+                        <td>{{ order.name }}</td>
+                        <td>{{ order.email }}</td>
+                        <td>{{ order.payment }}</td>
+                        <td>{{ order.comments }}</td>
+                        <td>{{ order.paid_date }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    </div>
+</body>
+</html>

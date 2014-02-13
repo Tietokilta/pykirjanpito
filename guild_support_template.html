@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Killan tuki</title>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Killan tuki</h1>
+        {% for event in events %}
+            <h2>{{ event.name }}</h2>
+            <table class="table">
+                <tr>
+                    <th>Nimi</th>
+                    <th>Email</th>
+                    <th>Maksu</th>
+                </tr>
+                {% for order in event.orders %}
+                    <tr>
+                        <td>{{ order.name }}</td>
+                        <td>{{ order.email }}</td>
+                        <td>{{ order.payment or '' }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    </div>
+</body>
+</html>
