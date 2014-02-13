@@ -19,11 +19,14 @@ class TIK:
         self.session = requests.Session()
         self.session.verify = False # This is bad! :-(
         self.session.headers.update({'User-Agent': 'pykirjanpito'})
+        self.session.get('https://kirjanpito.tietokilta.fi/')
+
         response = self.session.post('https://kirjanpito.tietokilta.fi/sessions', data={
             'login': username,
             'password': password,
             'commit': 'Kirjaudu sisään'
         })
+        self.session.get('https://kirjanpito.tietokilta.fi/accounts/list?new_fiscal_period=2013')
         #if response.status_code != 302:
         #    raise InvalidLoginError(response)
 
