@@ -93,6 +93,9 @@ for result in results:
         Order.event_id == args.event_id
     ):
         if order.name.decode('utf-8').lower() in result['message'].lower():
+            if not order.is_paid:
+                print "****" * 20
+                print order
             has_match = True
             break
 
@@ -131,7 +134,8 @@ if 'txt_folder' in configuration and configuration['txt_folder']:
                 lines = fp.readlines()
                 for line in lines:
                     if last_name.lower() in line.lower():
-                        print "%s: %s" % (
+                        print "%s%s: %s" % (
+                            '*.#'*40 if event.keyword in line or str(event.price) in line else '',
                             os.path.basename(file_),
                             line
                         )

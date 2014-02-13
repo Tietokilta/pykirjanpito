@@ -24,7 +24,7 @@ class Order(Base):
     comments = sa.Column(sa.Text)
     event_id = sa.Column(sa.Integer, sa.ForeignKey(Event.id))
     last_checked = sa.Column(sa.DateTime)
-    event = relationship(Event, backref="orders")
+    event = relationship(Event, backref="orders", order_by=name)
 
     """
     @staticmethod
